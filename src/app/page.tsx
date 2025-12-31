@@ -1,65 +1,100 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useState } from "react"
+import Item from "./components/item";
+
+const Page = () => {
+
+  const [myItems, setMyItems] = useState<string[]>([]);
+  const [purchasedItems, setPurchasedItems] = useState<string[]>([]);
+  const [newItem, setNewItem] = useState("");
+  const myItemsComponent: Array<React.ReactNode> = [];
+  const purchasedItemsComponent: Array<React.ReactNode> = [];
+
+  myItems.map((item: string) => {
+    myItemsComponent.push(<Item key={item} text={item} type={"myItem"} handleDeleteItem={handleDeleteItem} handleCheckButtonClick={handleCheckButtonClick} />)
+  });
+  purchasedItems.map((item: string) => {
+    purchasedItemsComponent.push(<Item key={item} text={item} type={"purchased"} handleDeleteItem={handleDeleteItem} handleCheckButtonClick={handleCheckButtonClick} />)
+  });
+
+  const handleNewItemChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewItem(event.target.value);
+  };
+
+  const handleAddButtonClick = () => {
+    if (newItem == "") {
+      return;
+    }
+    if (myItems.includes(newItem.toLowerCase())) {
+      return;
+    } else {
+      setMyItems([newItem.toLowerCase(), ...myItems]);
+      setNewItem("");
+    }
+  }
+
+  function handleDeleteItem(item: string, type: "myItem" | "purchased") {
+    if (type == "myItem") {
+      const index = myItems.findIndex((x) => x == item);
+      myItems.splice(index, 1)
+      if (index < 0) {
+        return;
+      }
+      setMyItems([...myItems])
+    } else {
+      const index = purchasedItems.findIndex((x) => x == item);
+      purchasedItems.splice(index, 1)
+      if (index < 0) {
+        return;
+      }
+      setPurchasedItems([...purchasedItems])
+    }
+  }
+
+  function handleCheckButtonClick(item: string, type: "myItem" | "purchased", checked: boolean) {
+    if (type == "myItem" && checked) {
+      const index = myItems.findIndex((x) => x == item);
+      myItems.splice(index, 1)
+      setMyItems([...myItems])
+      setPurchasedItems([item, ...purchasedItems])
+    } else if (type == "purchased" && !checked) {
+      const index = purchasedItems.findIndex((x) => x == item);
+      purchasedItems.splice(index, 1)
+      setPurchasedItems([...purchasedItems])
+      setMyItems([item, ...myItems])
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+    <main className="flex flex-col justify-center items-center gap-4 rounded-xl shadow-2xl max-w-[600px] mx-auto my-10 py-12 px-16">
+      <div className="text-2xl font-medium text-[#0080ff] ">Grocery List</div>
+
+      {/* input/ add items */}
+      <div className="w-full flex gap-2">
+        <input className="grow focus:outline-none border-2 border-[#d9d9d9] rounded-md px-2 py-1"
+          type="text"
+          placeholder="Add an item..."
+          value={newItem}
+          onChange={handleNewItemChange} />
+        <button onClick={handleAddButtonClick} className="min-w-[100px] bg-[#08a12c] py-1 px-2 text-white cursor-pointer font-semibold rounded-md">Add</button>
+      </div>
+
+      {/* show items */}
+
+      <div className="w-full flex flex-col">
+        <div className="w-full text-[#003e96] font-semibold text-lg rounded-md bg-[#006aff1d] border-b-4 border-[#006affc1] px-2 py-1">My Items</div>
+        <div className="mt-2">{myItemsComponent}</div>
+      </div>
+
+      {/* show Purchased items */}
+      <div className="w-full flex flex-col">
+        <div className="w-full text-[#4d4d4d] font-semibold text-lg rounded-md bg-[#acacac1d] border-b-4 border-[#c7c7c7c1] px-2 py-1">Purchased</div>
+        <div>{purchasedItemsComponent}</div>
+      </div>
+
+    </main>
+  )
 }
+
+export default Page
